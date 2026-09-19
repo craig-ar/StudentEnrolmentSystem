@@ -1,0 +1,11 @@
+c[ info ] starting HTTP server...
+[ info ] watching file system for changes...
+╭─────────────────────────────────────────────────╮
+│                                                 │
+│    Server address: http://localhost:3333        │
+│    Watch Mode: Legacy                           │
+│    Ready in: 691 ms                             │
+│                                                 │
+╰─────────────────────────────────────────────────╯
+[09:48:19.177] [32mINFO[39m (25536): [36mstarted HTTP server on localhost:3333[39m
+[ info ] Underlying HTTP server died. Still watching for changes

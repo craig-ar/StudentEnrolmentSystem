@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Student from '#models/student'
+import { createStudentValidator, updateStudentValidator } from '#validators/student'
 
 export default class StudentsController {
   /**
@@ -24,12 +25,18 @@ export default class StudentsController {
     const lastName = request.input('LastName')
     const emailAddress = request.input('EmailAddress')
 
-    const student = await Student.create({
-      StudentID: studentID,
-      GivenName: givenName,
-      LastName: lastName,
-      EmailAddress: emailAddress,
-    })
+    const payload = await request.validateUsing(createStudentValidator)
+
+    const student = await Student.create(payload)
+
+    return response.ok(`Student: \n ${studentID}\n ${givenName} ${lastName}\n ${emailAddress}\nwas added to the Database.`)
+
+    //const student = await Student.create({
+    //  StudentID: studentID,
+    //  GivenName: givenName,
+    //  LastName: lastName,
+    //  EmailAddress: emailAddress,
+    //})
 
     return response.ok(student)
   }
@@ -37,37 +44,59 @@ export default class StudentsController {
   /**
    * Show individual record
    */
-  async show({ params }: HttpContext) {
-    const student = await Student.find(params.id)
-    return student
+  async show({ response, params }: HttpContext) {
+    try{
+      const student = await Student.find(params.id)
+      return student
+    } catch (ModelNotFoundException) {
+      return response.notFound({message: 'Student not found' })
+    }
   }
 
   /**
    * Edit individual record
    */
-  async edit({ params }: HttpContext) {}
+  async edit({ }: HttpContext) {}
 
   /**
    * Handle form submission for the edit action
    */
   async update({ params, request, response }: HttpContext) {
-    const fName = request.input('GivenName')
-    const lName = request.input('LastName')
-    const email = request.input('EmailAddress')
+  //  const fName = request.input('GivenName')
+  //  const lName = request.input('LastName')
+  //  const email = request.input('EmailAddress')
 
-    try {
-      const student = await Student.findOrFail(params.id)
+    let stud: Student
 
-      await student.merge({
-        GivenName: fName,
-        LastName: lName,
-        EmailAddress: email
-      }).save()
-      return response.ok(`Student, ${fName} ${lName} was updated successfully`)
+    try{
+      stud = await Student.findOrFail(params.id)
     } catch (ModelNotFoundException) {
-      return response.notFound(`Student ${params.id} was not found`)
+      return response.notFound(`Student, ${params.id} does not exist`)
     }
-  }
+
+    const payload = request.all()
+    
+    if (request.method() == 'PUT') {
+      await request.validateUsing(updateStudentValidator)
+    }
+    
+    await stud.merge(payload).save()
+
+    return response.ok(`Student ${params.id} was updated successfully`)
+
+  //   try {
+  //     const student = await Student.findOrFail(params.id)
+
+  //     await student.merge({
+  //       GivenName: fName,
+  //       LastName: lName,
+  //       EmailAddress: email
+  //     }).save()
+  //     return response.ok(`Student, ${fName} ${lName} was updated successfully`)
+  //   } catch (ModelNotFoundException) {
+  //     return response.notFound(`Student ${params.id} was not found`)
+  //   }
+   }
 
   /**
    * Delete record
